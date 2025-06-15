@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>기업 한눈에 보기</title>
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#2D8CFF; --primary-light:#E8F1FF; --bg:#F5F7FA;
+  --txt:#222; --muted:#666; --radius:8px; --shadow:0 2px 7px rgba(0,0,0,.06)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--txt);line-height:1.5;padding:40px 5vw 80px}
+h1{font-size:1.8rem;font-weight:700;margin-bottom:12px}
+p.lead{color:var(--muted);margin-bottom:28px}
+
+/* 검색창 */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:24px}
+#search{flex:1 1 240px;display:flex;align-items:center;background:#fff;border:1px solid #d0d7e1;border-radius:var(--radius);padding:0 10px}
+#search input{border:none;outline:none;background:transparent;padding:10px;font-size:.95rem;flex:1}
+#search svg{width:18px;height:18px;fill:var(--muted)}
+
+/* 카테고리 버튼 */
+#category{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px}
+.cat-btn{flex:0 0 auto;border:none;cursor:pointer;background:#fff;color:var(--muted);
+  border:1px solid #d0d7e1;border-radius:20px;padding:6px 14px;font-size:.85rem;transition:.2s}
+.cat-btn.active,.cat-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* 카드 */
+.grid{display:grid;gap:24px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:22px;display:flex;flex-direction:column;justify-content:space-between;transition:.2s}
+.card:hover{transform:translateY(-4px);box-shadow:0 6px 14px rgba(0,0,0,.08)}
+.badge{display:inline-block;font-size:.75rem;font-weight:500;background:var(--primary-light);
+  color:var(--primary);padding:3px 8px;border-radius:12px;margin-bottom:10px}
+.card h3{font-size:1.05rem;margin-bottom:10px;font-weight:600}
+.card p{font-size:.87rem;color:var(--muted);margin-bottom:18px;min-height:60px}
+a.btn{text-align:center;text-decoration:none;background:var(--primary);color:#fff;
+  padding:10px;border-radius:var(--radius);font-size:.88rem;font-weight:500}
+@media(max-width:480px){body{padding:24px 4vw}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>기업 한눈에 보기</h1>
+  <p class="lead">카테고리를 탭하거나 회사명을 검색해 원하는 기업 정보를 즉시 확인하세요.</p>
+</header>
+
+<div class="toolbar">
+  <div id="search">
+    <input type="text" id="searchInput" placeholder="회사명 검색">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 2a8 8 0 015.29 13.71l4.74 4.74-1.42 1.42-4.74-4.74A8 8 0 1110 2m0 2a6 6 0 100 12 6 6 0 000-12z"/></svg>
+  </div>
+</div>
+
+<!-- 고정 산업군 버튼 영역 -->
+<div id="category"></div>
+
+<!-- 기업 카드 영역 -->
+<div id="grid" class="grid"></div>
+
+<script>
+/* ===== 0. 고정 산업군 정의 ===== */
+const ALL_CATEGORIES=[
+  '전체',
+  '먹거리·농림어업',
+  '에너지·자원·환경',
+  '제조·공장·소재',
+  '건설·부동산',
+  '유통·물류',
+  '정보통신·IT·디지털',
+  '금융·보험·투자',
+  '의료·헬스케어',
+  '교육·연구·전문서비스',
+  '문화·콘텐츠·엔터테인먼트',
+  '관광·숙박·외식',
+  '공공·안전·사회서비스'
+];
+
+/* ===== 1. 기업 데이터 ===== */
+const companies = [
+  {
+    name: "아스테라시스",
+    category: "의료·헬스케어",
+    summary: "HIFU·RF 리프팅 장비 ‘Liftera’로 유명한 미용 의료기기 제조기업",
+    pdf: "https://kind.krx.co.kr/external/dst/irReference/16898/1Q25_아스테라시스%20실적발표_final.pdf"
+  },
+,{
+  name: "오이솔루션",
+  category: "정보통신·IT·디지털",
+  summary: "5G 프론트홀·데이터센터용 고속 광트랜시버를 설계-생산하는 광통신 전문기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16897/OES%20IR_Presentation%202025%20Q1.pdf"
+},{
+  name: "다원넥스뷰",
+  category: "정보통신·IT·디지털",
+  summary: "반도체·디스플레이 검사장비 및 고해상도 영상 솔루션을 개발하는 장비업체",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16896/250613_%EB%8B%A4%EC%9B%90%EB%84%A5%EC%8A%A4%EB%B7%B0_%EA%B8%B0%EC%97%85%EC%84%A4%EB%AA%85%ED%9A%8C.pdf"
+},{
+  name: "파마리서치(분할·지주전환) ①",
+  category: "의료·헬스케어",
+  summary: "PN 재생의학 전문 파마리서치의 기업분할·지주회사 전환 설명자료(1부)",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16894/%EA%B8%B0%EC%97%85%20%EB%B6%84%ED%95%A0%20%EB%B0%8F%20%EC%A7%80%EC%A3%BC%ED%9A%8C%EC%82%AC%20%EC%A0%84%ED%99%98%20%EC%84%A4%EB%AA%85%EC%9E%90%EB%A3%8C_(%EC%A3%BC)%ED%8C%8C%EB%A7%88%EB%A6%AC%EC%84%9C%EC%B9%98%20-%201.pdf"
+},{
+  name: "파마리서치(분할·지주전환) ②",
+  category: "의료·헬스케어",
+  summary: "파마리서치 지주회사 전환 설명자료(2부)",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16894/%EA%B8%B0%EC%97%85%20%EB%B6%84%ED%95%A0%20%EB%B0%8F%20%EC%A7%80%EC%A3%BC%ED%9A%8C%EC%82%AC%20%EC%A0%84%ED%99%98%20%EC%84%A4%EB%AA%85%EC%9E%90%EB%A3%8C_(%EC%A3%BC)%ED%8C%8C%EB%A7%88%EB%A6%AC%EC%84%9C%EC%B9%98%20-%202.pdf"
+},{
+  name: "오가노이드사이언스",
+  category: "의료·헬스케어",
+  summary: "오가노이드 플랫폼으로 신약 평가·난치질환 치료제를 연구하는 바이오 벤처",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16878/%EC%98%A4%EA%B0%80%EB%85%B8%EC%9D%B4%EB%93%9C%EC%82%AC%EC%9D%B4%EC%96%B8%EC%8A%A4_IR%20Book_2025.pdf"
+},{
+  name: "갤럭시아머니트리",
+  category: "금융·보험·투자",
+  summary: "모바일 간편결제·전자상품권 플랫폼 ‘머니트리’를 운영하는 핀테크 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16875/2025.05.15_1Q25_IR_%EA%B0%A4%EB%9F%AD%EC%8B%9C%EC%95%84%EB%A8%B8%EB%8B%88%ED%8A%B8%EB%A6%AC.pdf"
+},{
+  name: "아이티센글로벌",
+  category: "정보통신·IT·디지털",
+  summary: "클라우드 MSP·IT 인프라 총판 서비스를 제공하는 글로벌 IT 서비스 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16892/250612_%EC%95%84%EC%9D%B4%ED%8B%B0%EC%84%BC%EA%B8%80%EB%A1%9C%EB%B2%8C%20IR%20202506_%EC%B5%9C%EC%A2%85%20(1).pdf"
+},{
+  name: "플럼라인생명과학",
+  category: "의료·헬스케어",
+  summary: "반려동물 유전자 치료제·백신을 개발하는 동물 바이오 전문기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16891/06122025%20%EC%BD%94%EB%84%A5%EC%8A%A4%20IR%20(%EC%A3%BC)%ED%94%8C%EB%9F%BC%EB%9D%BC%EC%9D%B8%EC%83%9D%EB%AA%85%EA%B3%BC%ED%95%99.pdf"
+},{
+  name: "CGI",
+  category: "정보통신·IT·디지털",
+  summary: "디지털 콘텐츠·솔루션 사업을 영위하며 주주설명회를 진행한 IT 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16890/0612%20CGI%2025%EB%85%84%202%EC%B0%A8%20%EC%A3%BC%EC%A3%BC%EC%84%A4%EB%AA%85%ED%9A%8C_vF%201.pdf"
+}
+,{
+  name: "이노룰스",
+  category: "정보통신·IT·디지털",
+  summary: "BPM·BRMS·RPA 플랫폼을 제공해 기업 프로세스 자동화와 디지털 전환을 지원하는 소프트웨어 업체",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16889/2025.1Q%20이노룰스%20IR%20Book.pdf"
+},{
+  name: "하스",
+  category: "제조·공장·소재",
+  summary: "산업용 특수강 소재와 부품을 생산·가공하는 종합 금속 소재 제조기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16883/%ED%95%98%EC%8A%A4%201Q25%20%EC%8B%A4%EC%A0%81%EB%B0%9C%ED%91%9C%20IR.pdf"
+},{
+  name: "메디포스트",
+  category: "의료·헬스케어",
+  summary: "제대혈·줄기세포 치료제 ‘카티스템’과 제대혈 뱅킹 서비스를 운영하는 재생의료 바이오기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16863/%EB%A9%94%EB%94%94%ED%8F%AC%EC%8A%A4%ED%8A%B8%20%EA%B8%B0%EC%97%85%EC%84%A4%EB%AA%85%ED%9A%8C(IR)%20%EC%9E%90%EB%A3%8C.pdf"
+},{
+  name: "에스엠씨지",
+  category: "제조·공장·소재",
+  summary: "식음료·화장품용 유리병 등 포장용 유리용기를 생산하는 국내 최대 유리용기 제조사",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16862/%EC%97%90%EC%8A%A4%EC%97%A0%EC%94%A8%EC%A7%80_IR%20Book_2025_f.pdf"
+},{
+  name: "오로스테크놀로지",
+  category: "제조·공장·소재",
+  summary: "반도체 전(前)공정 오버레이 계측장비를 국산화한 반도체 검사장비 전문기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16806/%EC%A0%9C%EC%B6%9C%EC%9A%A9_(%EC%A3%BC)%EC%98%A4%EB%A1%9C%EC%8A%A4%ED%85%8C%ED%81%AC%EB%86%80%EB%A1%9C%EC%A7%80_IR_2505.pdf"
+},{
+  name: "HLB제약",
+  category: "의료·헬스케어",
+  summary: "장기지속형 주사제 플랫폼 ‘SMEB’ 기반 전문의약품 및 건강기능식품을 개발·생산하는 제약사",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16888/HLB%EC%A0%9C%EC%95%BD_IR%20Book.pdf"
+},{
+  name: "HLB PEP",
+  category: "의료·헬스케어",
+  summary: "펩타이드 소재·약물전달 기술을 연구해 항암·희귀질환 신약을 개발하는 바이오텍",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16887/HLB%20PEP_IR(250611).pdf"
+},{
+  name: "헥토이노베이션",
+  category: "정보통신·IT·디지털",
+  summary: "전자결제·본인인증·핀테크 보안 플랫폼을 제공하는 융합 IT·보안 솔루션 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16885/%ED%97%A5%ED%86%A0%EC%9D%B4%EB%85%B8%EB%B2%A0%EC%9D%B4%EC%85%98%20IR%20Book_250610(%EA%B3%B5%EC%8B%9C).pdf"
+},{
+  name: "HLB제넥스",
+  category: "의료·헬스케어",
+  summary: "표적항암제·희귀질환 치료제 파이프라인을 보유한 HLB 그룹 계열 신약개발사",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16884/HLB%EC%A0%9C%EB%84%A5%EC%8A%A4_IR%20Book.pdf"
+},{
+  name: "강스템바이오텍",
+  category: "의료·헬스케어",
+  summary: "제대혈 유래 줄기세포 기반 면역·난치질환 치료제를 연구·임상 중인 재생의료 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16881/%EA%B8%B0%EC%97%85%EC%84%A4%EB%AA%85%ED%9A%8C%20%EB%B0%9C%ED%91%9C%EC%9E%90%EB%A3%8C_%EA%B0%95%EC%8A%A4%ED%85%9C%EB%B0%94%EC%9D%B4%EC%98%A4%ED%85%8C%ED%81%AC_250611.pdf"
+}
+,{
+// ── 유수홀딩스 ──
+  name: "유수홀딩스",
+  category: "금융·보험·투자",
+  summary: "물류 자회사(유수로지스틱스)와 해운 IT 서비스(싸이버로지텍)를 거느리며 투자·물류·임대 사업을 영위하는 지주회사", //[3]
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16880/2025.%201Q%20경영실적_%EC%9C%A0%EC%88%98%ED%99%80%EB%94%A9%EC%8A%A4.pdf"
+},{
+  name: "아바코",
+  category: "제조·공장·소재",
+  summary: "OLED-디스플레이 및 반도체 공정용 진공·자동화 장비를 설계-제조하는 공정 장비 전문기업", //[4]
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16879/%EC%95%84%EB%B0%94%EC%BD%94%20IR%20Book_2025%EB%85%84_1Q.pdf"
+},{
+  name: "지니언스",
+  category: "정보통신·IT·디지털",
+  summary: "네트워크 접근제어(NAC)·EDR 등 통합 사이버보안 소프트웨어를 개발·공급하는 보안 전문기업", //[5]
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16872/KB%20SmallCap_Genians_IRBook.pdf"
+},{
+  name: "듀켐바이오",
+  category: "의료·헬스케어",
+  summary: "PET·PSMA 등 진단·치료용 방사성의약품을 개발·제조·판매하는 라디오파마 기업", //[6]
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16843/%EB%93%80%EC%BC%90%EB%B0%94%EC%9D%B4%EC%98%A4%20IR_2025.pdf"
+},{
+  name: "K Car",
+  category: "유통·물류",
+  summary: "직영중고차 매입·진단·판매와 렌터카·구독 서비스를 운영하는 국내 1위 중고차 플랫폼",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16876/K%20Car_IR%20PT_KR_202506.pdf"
+},{
+  name: "노을",
+  category: "의료·헬스케어",
+  summary: "AI 디지털 현미경 ‘miLab’ 기반 현장진단 솔루션을 개발·상용화하는 메드테크 스타트업", //[7]
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16873/%EB%85%B8%EC%9D%84%20IR%20BOOK_(KB%20SmallCap%20Corporate%20Day).pdf"
+},{
+  name: "쓰리빌리언(3billion)",
+  category: "의료·헬스케어",
+  summary: "AI 기반 유전변이 해석 기술로 희귀질환 유전체(WES/WGS) 진단 서비스를 제공하는 디지털 헬스 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16871/3billion-1Q-25.pdf"
+},{
+  name: "아이엔트론바이오테크놀로지",
+  category: "의료·헬스케어",
+  summary: "박테리오파지·면역조절 단백질 기반 신개념 항생제·항암제를 개발하는 바이오텍",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16870/iNtRON_IR_%EA%B8%B0%EC%97%85%EC%84%A4%EB%AA%85%ED%9A%8C__250610.pdf"
+},{
+  name: "삼현",
+  category: "제조·공장·소재",
+  summary: "정밀 가공·금형·자동차·전장 부품을 생산하는 중소 제조기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16869/IR%20BOOK_%EC%A3%BC%EC%8B%9D%ED%9A%8C%EC%82%AC%20%EC%82%BC%ED%98%84.pdf"
+},{
+  name: "FINO",
+  category: "금융·보험·투자",
+  summary: "글로벌 외환·지급결제 SaaS 플랫폼을 운영하는 핀테크 스타트업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16867/FINO_IR_BOOK_20250609.pdf"
+},{
+  name: "슈프리마",
+  category: "정보통신·IT·디지털",
+  summary: "지문·안면 인식 및 출입통제 솔루션을 140여 국가에 공급하는 생체인식 보안 전문기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16864/Suprema%20IR_kor_20250609.pdf"
+},{
+  name: "온코닉테라뷰틱스",
+  category: "의료·헬스케어",
+  summary: "위식도역류·소화기 암 등 혁신 신약 파이프라인을 보유한 임상 단계 바이오기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16861/2025.06.09_11%EC%98%A8%EC%BD%94%EB%8B%9D%ED%85%8C%EB%9D%BC%EB%B7%B0%ED%8B%B1%EC%8A%A4%20IR_%EA%B2%8C%EC%8B%9C%EC%9A%A9_final.pdf"
+},{
+  name: "바이오솔루션",
+  category: "의료·헬스케어",
+  summary: "자가 조직세포 치료제·인공피부 등 세포치료·재생의학 제품을 개발·제조하는 바이오 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16859/(%EC%A3%BC)%EB%B0%94%EC%9D%B4%EC%98%A4%EC%86%94%EB%A3%A8%EC%85%98_NH%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C_2025.06.09.pdf"
+}
+,{
+// ── 파크시스템스 ──
+  name: "파크시스템스",
+  category: "제조·공장·소재",
+  summary: "원자힘현미경(AFM)과 반도체·배터리 공정 검사솔루션을 공급하는 나노 계측장비 글로벌 1위 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16854/2025_1Q_%ED%8C%8C%ED%81%AC%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%8A%A4%20IR%20%EC%9E%90%EB%A3%8C_250519.pdf"
+},{
+  name: "클래시스",
+  category: "의료·헬스케어",
+  summary: "HIFU·RF 리프팅 장비 ‘슈링크’와 ‘울핏’을 자체 설계·제조해 글로벌 피부미용 시장을 선도",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16850/Classys%20IR%20Book_1Q25_%EA%B5%AD%EB%AC%B8_vFF.pdf"
+},{
+  name: "프롬바이오",
+  category: "의료·헬스케어",
+  summary: "관절·위 건강 개별인정형 원료를 기반으로 건강기능식품을 개발·판매하는 건기식 전문기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16858/%E2%98%85%ED%94%84%EB%A1%AC%EB%B0%94%EC%9D%B4%EC%98%A4_IR%20BOOK_2025final.pdf"
+},{
+  name: "아미코젠",
+  category: "의료·헬스케어",
+  summary: "의약용 특수효소·바이오소재·CDMO 서비스로 항체의약·바이오시밀러 원부자재를 공급",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16857/2025%20Amicogen%20IR%20-%20NDR.pdf"
+},{
+  name: "JVM",
+  category: "의료·헬스케어",
+  summary: "병·의원 약국 자동화 기기(약 봉투 자동조제·검수 로봇)를 제조해 글로벌 시장을 공략",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16852/%E2%98%85JVM_IR%EC%9E%90%EB%A3%8C_2025_KR_MAY.pdf"
+},{
+  name: "라메디텍",
+  category: "의료·헬스케어",
+  summary: "레이저 무통 채혈기 ‘AMT-100’ 등 미세 레이저 의료기기를 개발·상용화한 헬스케어 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16851/%EB%9D%BC%EB%A9%94%EB%94%94%ED%85%8D%20IR%20BOOK%20%EA%B8%B0%EC%97%85%EC%84%A4%EB%AA%85%ED%9A%8C(2025.06.).pdf"
+},{
+  name: "슈프리마",
+  category: "정보통신·IT·디지털",
+  summary: "지문·안면인식 알고리즘과 출입통제 단말기를 140개국 이상에 공급하는 생체인식 보안 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16840/Suprema%20IR_kor_20250602.pdf"
+},{
+  name: "바이오솔루션",
+  category: "의료·헬스케어",
+  summary: "자가 조직세포 치료제·인공피부 등 세포치료·재생의학 제품을 연구·제조하는 바이오 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16849/(%EC%A3%BC)%EB%B0%94%EC%9D%B4%EC%98%A4%EC%86%94%EB%A3%A8%EC%85%98_KB%EC%A6%9D%EA%B6%8C_2025.06.04.pdf"
+},{
+  name: "고영테크놀로지",
+  category: "제조·공장·소재",
+  summary: "3D AOI·SPI 검사장비를 기반으로 SMT·반도체 패키징 공정 정밀검사 시장을 지배",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16848/%E2%98%852025%2006%2002%20Koh%20Young%20Technology_EN%20(1).pdf"
+},{
+  name: "픽셀플러스",
+  category: "제조·공장·소재",
+  summary: "CMOS 이미지센서(IC) 설계·판매로 보안카메라·차량용 카메라 시장에서 강점을 보유",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16845/1Q25%20%ED%94%BD%EC%85%80%ED%94%8C%EB%9F%AC%EC%8A%A4_IR%20Book_%EA%B3%B5%EC%8B%9C.pdf"
+},{
+  name: "웨이브텍",
+  category: "제조·공장·소재",
+  summary: "전력·무선 통신 계측기와 반도체 테스트 핸들러를 설계·제조하는 전자계측 장비 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16839/WAVETC_IRBOOK_25Q1.pdf"
+},{
+  name: "오름테라퓨틱",
+  category: "의료·헬스케어",
+  summary: "세포·유전자 치료제 플랫폼을 기반으로 면역항암·희귀질환 신약을 개발하는 바이오텍",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16837/%EC%98%A4%EB%A6%84%ED%85%8C%EB%9D%BC%ED%94%84%EC%9C%A1_IR20250602~20250604.pdf"
+},{
+  name: "GCWB",
+  category: "의료·헬스케어",
+  summary: "GC지주 계열 건강기능식품·바이오소재 사업을 담당하며 장 건강 제품 ‘닥터락토’ 등을 판매",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16836/GCWB%20기업설명회%20The%20Value%20Day.pdf"
+},{
+  name: "보로노이",
+  category: "의료·헬스케어",
+  summary: "저분자 표적항암제 파이프라인(HDAC6, FGFR 등)을 개발하는 구조기반 신약개발 기업",
+  pdf: "https://kind.krx.co.kr/external/dst/irReference/16832/DS%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C_Corporate%20day_%EB%B3%B4%EB%A1%9C%EB%85%B8%EC%9D%B4_IR%EC%9E%90%EB%A3%8C_2025-05-30_final.pdf"
+}
+];
+
+
+/* ===== 2. 카테고리 버튼 렌더링 ===== */
+const catEl=document.getElementById('category');
+ALL_CATEGORIES.forEach(cat=>{
+  const btn=document.createElement('button');
+  btn.className='cat-btn'+(cat==='전체'?' active':'');
+  btn.textContent=cat;
+  btn.dataset.cat=cat;
+  catEl.appendChild(btn);
+});
+
+/* ===== 3. 카드 렌더링 ===== */
+const grid=document.getElementById('grid');
+function render(list){
+  grid.innerHTML='';
+  if(!list.length){
+    grid.innerHTML='<p style="color:var(--muted)">검색 결과가 없습니다.</p>';
+    return;
+  }
+  list.forEach(c=>{
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <div>
+        <span class="badge">${c.category}</span>
+        <h3>${c.name}</h3>
+        <p>${c.summary}</p>
+      </div>
+      <a class="btn" href="${c.pdf}" target="_blank">IR PDF 보기</a>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ===== 4. 필터 로직 ===== */
+let currentCat='전체', keyword='';
+function applyFilter(){
+  const filtered=companies.filter(c=>{
+    const okCat=currentCat==='전체'||c.category===currentCat;
+    const okKey=c.name.toLowerCase().includes(keyword);
+    return okCat&&okKey;
+  });
+  render(filtered);
+}
+
+/* 이벤트 바인딩 */
+catEl.addEventListener('click',e=>{
+  if(!e.target.matches('.cat-btn'))return;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  currentCat=e.target.dataset.cat;
+  applyFilter();
+});
+document.getElementById('searchInput').addEventListener('input',e=>{
+  keyword=e.target.value.trim().toLowerCase();
+  applyFilter();
+});
+
+/* 최초 호출 */
+render(companies);
+</script>
+</body>
+</html>
