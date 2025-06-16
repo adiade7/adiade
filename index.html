@@ -10,39 +10,43 @@
 
 <style>
 :root{
-  --primary:#2d8cff;         /* 브랜드 파랑 */
-  --bg:#f7f9fc;              /* 전체 배경 */
-  --card:#ffffff;            /* 카드 배경 */
-  --txt:#212529;             /* 기본 글자색 */
-  --muted:#666;              /* 부글자색 */
-  --radius:10px;
-  --shadow:0 2px 8px rgba(0,0,0,.06)
+  --primary:#2d8cff; --bg:#f7f9fc; --card:#fff;
+  --txt:#212529; --muted:#666; --radius:10px; --shadow:0 2px 8px rgba(0,0,0,.06)
 }
-
-/* RESET ------------------------------------------------ */
+/* RESET */
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{
-  font-family:'Noto Sans KR',sans-serif;
-  background:var(--bg); color:var(--txt); line-height:1.5;
-  padding:88px 5vw 40px;                     /* 헤더 높이만큼 top-padding */
+  font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--txt);
+  padding:120px 5vw 40px;          /* 헤더(56)+탭바(48)+여유 */
+  line-height:1.5
 }
 
-/* HEADER (고정 바) ------------------------------------ */
+/* ── HEADER(브랜드) ─────────────── */
 header{
-  position:fixed; top:0; left:0; width:100%; z-index:1000;
-  background:var(--primary); color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.1);
-  display:flex; align-items:center; justify-content:center;
-  height:56px;
+  position:fixed; top:0; left:0; width:100%; height:56px; z-index:1000;
+  background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.1)
 }
 header h1{font-size:1.15rem;font-weight:600}
 
-/* GRID ------------------------------------------------ */
-.wrap{
-  display:grid; gap:28px;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+/* ── TAB BAR ───────────────────── */
+.tabbar{
+  position:fixed; top:56px; left:0; width:100%; height:48px; z-index:999;
+  background:#fff; display:flex; gap:4px; overflow-x:auto; padding:8px 5vw;
+  border-bottom:1px solid #d9e1ee
 }
+.tabbar button{
+  flex:0 0 auto; padding:6px 14px; font-size:.9rem; border-radius:18px;
+  background:#f0f3fa; border:none; color:var(--muted); cursor:pointer; transition:.2s
+}
+.tabbar button.active,
+.tabbar button:hover{background:var(--primary); color:#fff}
 
-/* CARD ------------------------------------------------ */
+/* ── GRID WRAP ─────────────────── */
+.wrap{display:grid; gap:28px; grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+
+/* ── CARD 공통 ─────────────────── */
 .card{
   background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;
   display:flex; flex-direction:column; justify-content:space-between; transition:.2s
@@ -50,193 +54,182 @@ header h1{font-size:1.15rem;font-weight:600}
 .card:hover{transform:translateY(-4px)}
 .card h3{font-size:1rem; margin-bottom:8px; font-weight:600}
 .card p{font-size:.85rem; color:var(--muted); margin-bottom:14px}
-a.btn{
-  display:inline-block; text-decoration:none; text-align:center;
-  background:var(--primary); color:#fff; padding:8px 12px; border-radius:var(--radius); font-size:.83rem
-}
+a.btn{align-self:flex-start; text-decoration:none; padding:8px 12px; border-radius:var(--radius);
+  background:var(--primary); color:#fff; font-size:.83rem}
 
-/* VIDEO ------------------------------------------------*/
+/* 영상 iframe 비율 유지 */
 .video-wrapper{position:relative; padding-top:56.25%; margin-bottom:10px}
 .video-wrapper iframe{
   position:absolute; inset:0; width:100%; height:100%; border:0; border-radius:var(--radius)}
+
+/* 각 섹션이 헤더·탭 높이만큼 내려와 보이도록 */
+section{scroll-margin-top:120px}
+h2{font-size:1.25rem; margin-bottom:18px; font-weight:600}
+
 @media(prefers-color-scheme:dark){
   body{background:#141618; color:#ddd}
   .card{background:#1e2023}
   header{background:#1b5bff}
+  .tabbar{background:#1e2023; border-bottom-color:#333}
+  .tabbar button{background:#333;color:#aaa}
 }
 </style>
 </head>
 <body>
 
-<!-- ───── HEADER BRAND BAR ───── -->
-<header><h1>하이뷰랩 · IR 콘텐츠 허브</h1></header>
+<!-- ===== 헤더 ===== -->
+<header><h1>하이뷰랩 콘텐츠 허브</h1></header>
 
-<!-- ───── MAIN GRID ───── -->
+<!-- ===== 탭 내비게이션 ===== -->
+<nav class="tabbar">
+  <button class="tabbtn active" data-target="ir">IR 자료실</button>
+  <button class="tabbtn" data-target="video">IR 발표 영상</button>
+  <button class="tabbtn" data-target="edu">기업 학습 영상</button>
+  <button class="tabbtn" data-target="article">참조 아티클</button>
+</nav>
+
+<!-- ===== 메인 콘텐츠 ===== -->
 <div class="wrap">
 
-  <!-- ▒▒ IR 자료실 ▒▒ -->
-  <section>
+  <!-- ▒ IR 자료실 ▒ -->
+  <section id="ir">
     <h2>IR 자료실 (PDF)</h2>
-
-    <div class="card">
-      <h3>파크시스템스 1Q25 IR</h3>
-      <p>AFM·나노계측 장비 글로벌 1위 기업 IR 자료</p>
-      <a class="btn" href="irk.html" target="_blank">PDF 보기</a>
-    </div>
-    <div class="card">
-      <h3>클래시스 1Q25 IR</h3>
-      <p>HIFU 리프팅 장비 ‘슈링크’ 제조사 IR 북</p>
-      <a class="btn" href="irk.html" target="_blank">PDF 보기</a>
-    </div>
-    <div class="card">
-      <h3>유수홀딩스 1Q25 실적</h3>
-      <p>물류·IT 지주회사 경영실적 발표</p>
-      <a class="btn" href="irk.html" target="_blank">PDF 보기</a>
-    </div>
-    <div class="card">
-      <h3>지니언스 NDR Book</h3>
-      <p>네트워크 보안 솔루션 기업 IR 자료</p>
-      <a class="btn" href="irk.html" target="_blank">PDF 보기</a>
-    </div>
-    <div class="card">
-      <h3>K Car 2025.06 IR</h3>
-      <p>직영중고차 플랫폼 투자설명서</p>
-      <a class="btn" href="irk.html" target="_blank">PDF 보기</a>
-    </div>
+    <!-- (카드 5개) -->
+    <div class="card"><h3>파크시스템스 1Q25 IR</h3><p>AFM·나노계측 장비 글로벌 1위 기업 IR 자료</p><a class="btn" href="irk.html" target="_blank">PDF 보기</a></div>
+    <div class="card"><h3>클래시스 1Q25 IR</h3><p>HIFU 리프팅 장비 ‘슈링크’ 제조사 IR 북</p><a class="btn" href="irk.html" target="_blank">PDF 보기</a></div>
+    <div class="card"><h3>유수홀딩스 1Q25 실적</h3><p>물류·IT 지주회사 경영실적 발표</p><a class="btn" href="irk.html" target="_blank">PDF 보기</a></div>
+    <div class="card"><h3>지니언스 NDR Book</h3><p>네트워크 보안 솔루션 기업 IR 자료</p><a class="btn" href="irk.html" target="_blank">PDF 보기</a></div>
+    <div class="card"><h3>K Car 2025.06 IR</h3><p>직영중고차 플랫폼 투자설명서</p><a class="btn" href="irk.html" target="_blank">PDF 보기</a></div>
   </section>
 
-  <!-- ▒▒ IR 발표 영상 ▒▒ -->
-  <section>
-    <h2>IR 발표 영상</h2>
+  <!-- ▒ IR 발표 영상 ▒ -->
+<section id="video">
+  <h2>IR 발표 영상</h2>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <!-- watch?v= → embed 로 교체 -->
-        <iframe src="https://www.youtube.com/embed/7OscBugjmUo"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen></iframe>
-      </div>
-      <h3>[2023 제5회 팁스밋업 ESG] 엔벨롭스 IR</h3>
-      <p>스타트업 IR 발표</p>
+<!-- 1. MYSC K-Camp 제주 (JeAYLyLIWjs) -->
+<div class="card">
+  <div class="video-wrapper">
+    <iframe
+      src="https://www.youtube.com/embed/JeAYLyLIWjs"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen></iframe>
+  </div>
+  <h3>[MYSC] K-Camp 제주</h3>
+  <p>제주 제2기 액셀러레이팅 데모데이</p>
+</div>
+
+  <!-- 2. 2023 관광 액셀러레이팅 데모데이 -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/n4ZGPoTAZWI" allowfullscreen></iframe>
     </div>
+    <h3>2023 관광 액셀러레이팅 데모데이</h3>
+    <p>초기 관광 스타트업 10팀 IR 피칭 생중계</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                allowfullscreen></iframe>
-      </div>
-      <h3>파마리서치 기업설명회</h3>
-      <p>PN 재생의학 사업 전략</p>
+  <!-- 3. 프라이머 25기 데모데이 · 하울링(윙크) -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/FO6H_YVBebQ" allowfullscreen></iframe>
     </div>
+    <h3>프라이머 25기 데모데이 ― 윙크</h3>
+    <p>일용직 인력관리 솔루션 ‘윙크’ IR 발표</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/5qap5aO4i9A"
-                allowfullscreen></iframe>
-      </div>
-      <h3>노을 KB SmallCap Day</h3>
-      <p>AI 디지털 현미경 miLab IR 발표</p>
+  <!-- 4. 2024 KDB NextONE 9기 데모데이 -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/igi-XJALl5k" allowfullscreen></iframe>
     </div>
+    <h3>2024 KDB NextONE 9기 데모데이</h3>
+    <p>AI·헬스케어 등 15개 스타트업 피칭 하이라이트</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/YQHsXMglC9A"
-                allowfullscreen></iframe>
-      </div>
-      <h3>CGI 주주설명회</h3>
-      <p>디지털 콘텐츠 사업 전략</p>
+  <!-- 5. 정주영 창업경진대회 2023 (vx-zOtSrUT0) -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/vx-zOtSrUT0" allowfullscreen></iframe>
     </div>
+    <h3>정주영 창업경진대회 2023</h3>
+    <p>발표 풀 영상</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/JGwWNGJdvx8"
-                allowfullscreen></iframe>
-      </div>
-      <h3>보로노이 Corporate Day</h3>
-      <p>표적항암제 파이프라인 소개</p>
+</section>
+
+  <!-- ▒ 기업 학습 영상 ▒ -->
+<section id="edu">
+  <h2>기업 학습 영상</h2>
+
+  <!-- 1. 토스 이승건 -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/uPhHPO98M84" allowfullscreen></iframe>
     </div>
-  </section>
+    <h3>토스 창업 스토리 (이승건 대표)</h3>
+    <p>간편송금 앱 ‘토스’가 1,000만 사용자를 얻기까지—실패·규제 극복 노하우</p>
+  </div>
 
-  <!-- ▒▒ 기업 학습 영상 ▒▒ -->
-  <section>
-    <h2>기업 학습 영상</h2>
-
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/2eP6GhdPRiA" allowfullscreen></iframe>
-      </div>
-      <h3>IR 피치덱 작성법</h3>
-      <p>10가지 핵심 포인트</p>
+  <!-- 2. 눔 정세주 -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/iskLIAF06No" allowfullscreen></iframe>
     </div>
+    <h3>눔(Noom) 유니콘 성장 전략</h3>
+    <p>투자‧PMF 실패를 딛고 5조 원 기업으로 도약한 미국 진출 이야기</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/KkGVmN68ByU" allowfullscreen></iframe>
-      </div>
-      <h3>지속가능경영 보고서 해설</h3>
-      <p>ESG 공시 필수 항목과 사례</p>
+  <!-- 3. 셀트리온 서정진 -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/g1xsW0SvHlU" allowfullscreen></iframe>
     </div>
+    <h3>서정진 회장 동기부여 연설</h3>
+    <p>45세·5천만원에서 세계적 바이오기업을 만든 ‘늦깎이’ 창업자의 메시지</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/p2Rch6WvPJE" allowfullscreen></iframe>
-      </div>
-      <h3>바이오 기업 가치평가</h3>
-      <p>임상 단계별 밸류에이션</p>
+  <!-- 4. 스타트업 경계 (ID: LtDpUhWrMTA) -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/LtDpUhWrMTA" allowfullscreen></iframe>
     </div>
+    <h3>대표병</h3>
+    <p>여러분의 회사 이렇게 가고 있지 않은가요?</p>
+  </div>
 
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/OPf0YbXqDm0" allowfullscreen></iframe>
-      </div>
-      <h3>핀테크 규제 동향</h3>
-      <p>전자금융거래법 개정 핵심</p>
+  <!-- 5. 추가 학습 영상 (ID: 0lJKucu6HJc) -->
+  <div class="card">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/0lJKucu6HJc" allowfullscreen></iframe>
     </div>
-
-    <div class="card">
-      <div class="video-wrapper">
-        <iframe src="https://www.youtube.com/embed/09R8_2nJtjg" allowfullscreen></iframe>
-      </div>
-      <h3>스타트업 PR 전략</h3>
-      <p>언론·SNS 활용 실무 가이드</p>
-    </div>
-  </section>
-
-  <!-- ▒▒ 기타 참조 아티클 ▒▒ -->
-  <section>
-    <h2>기타 참조 아티클</h2>
-
-    <div class="card">
-      <h3>2025 반도체 장비 시장 전망</h3>
-      <p>SEMI·Gartner 최신 수요 예측 분석</p>
-      <a class="btn" href="#">읽기</a>
-    </div>
-
-    <div class="card">
-      <h3>AI 의료기기 인허가 가이드</h3>
-      <p>식약처·FDA 심사 트렌드 비교</p>
-      <a class="btn" href="#">읽기</a>
-    </div>
-
-    <div class="card">
-      <h3>전기차 배터리 리사이클링 이슈</h3>
-      <p>규제·비즈니스 모델 인사이트</p>
-      <a class="btn" href="#">읽기</a>
-    </div>
-
-    <div class="card">
-      <h3>핀테크 M&A 사례 분석</h3>
-      <p>2024~25 글로벌 딜 리뷰</p>
-      <a class="btn" href="#">읽기</a>
-    </div>
-
-    <div class="card">
-      <h3>IPO 공모가 산정 체크리스트</h3>
-      <p>언더라이터·발행사 협상 포인트</p>
-      <a class="btn" href="#">읽기</a>
-    </div>
-  </section>
+    <h3>어떻게 성공할까?</h3>
+    <p>샘 알트먼 OpenAI CEO(15~현재), Y Combinator 사장(14~19)</p>
+  </div>
+</section>
 
 </div><!-- /wrap -->
+
+<!-- ===== 스크립트 : 탭 클릭·하이라이트 ===== -->
+<script>
+const btns=document.querySelectorAll('.tabbtn');
+btns.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.getElementById(btn.dataset.target)
+            .scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+/* 스크롤 시 현재 섹션에 맞춰 탭 active 변경 */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      btns.forEach(b=>b.classList.toggle('active',b.dataset.target===en.target.id));
+    }
+  });
+},{
+  rootMargin:'-50% 0px -45% 0px',  // 중간쯤 오면 active
+  threshold:0
+});
+document.querySelectorAll('section').forEach(sec=>io.observe(sec));
+</script>
 </body>
 </html>
